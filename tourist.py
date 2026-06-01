@@ -4,6 +4,13 @@ from ollama import Client
 from ollama import chat, ChatResponse
 from typing import Iterator
 
+from geopy.geocoders import Nominatim
+import time
+from pprint import pprint
+import requests
+import json
+from timezonefinder import TimezoneFinder
+
 # from rich import print
 
 # https://deepwiki.com/ollama/ollama-python/4.2-function-calling-with-tools
@@ -42,6 +49,167 @@ get_language_time_tool={
 	}
 
 #####################
+def get_taj_mahal():
+    return """
+                       _/\_
+                      /    \
+                    _/__/\__\_
+
+                   |          |
+                   |  ______  |
+         _/\_      | |      | |      _/\_
+        /    \     | |  /\  | |     /    \
+      _/__/\__\_   | | /  \ | |   _/__/\__\_
+
+     |          |  | |/____\| |  |          |
+     |  ______  |  |          |  |  ______  |
+     | |  /\  | |  |__________|  | |  /\  | |
+   ==============================================
+    ||  ||  ||  ||  ||  ||  ||  ||  ||  ||  ||
+   ==============================================
+        ||                                  ||
+        ||            TAJ MAHAL             ||
+       /__\            (India)             /__\ 
+    """
+
+def get_colosseum():
+    return """
+                  _________________________
+                _/_/_/_/_/_/_/_/_/_/_/_/_/_\_
+               /  ___   ___   ___   ___   ___\ 
+
+              |  |   | |   | |   | |   | |   | |
+              |  |___| |___| |___| |___| |___| |
+              |  ___   ___   ___   ___   ___   |
+              | |   | |   | |   | |   | |   |  |
+              | |___| |___| |___| |___| |___|  |
+             /                                  \ 
+            /            COLOSSEUM               \ 
+           /              (Italy)                 \ 
+          ------------------------------------------
+    """
+
+def get_great_wall():
+    return """
+               ______           ______
+
+              | |  | |         | |  | |
+          ____|_|__| |_________|_|__| |____
+         /  _____________________________  \ 
+        /  /  |   |   |   |   |   |   |  \  \ 
+       /  /___|___|___|___|___|___|___|___\  \ 
+
+      |  _________________________________  |
+      | |       ___           ___         | |
+      | |      /   \         /   \        | |
+      | |_____|     |_______|     |_______| |
+      |_______|     |_______|     |_________|
+               \   /         \   /
+             GREAT WALL     OF CHINA
+    """
+
+def get_christ_redeemer():
+    return """
+                      _  _
+                     ( `   )
+                    _/\_ _/\_
+                   /         \ 
+          ________/  _/\_/\_  \________
+
+         |________  |  O O  |  ________|
+                  \ |   ^   | /
+                   \|  ===  |/
+
+                    |       |
+                    /       \ 
+                   /         \ 
+
+                  |   | |   |
+                  |   | |   |
+                  |___|_|___|
+               CHRIST THE REDEEMER
+                    (Brazil)
+    """
+
+def get_petra():
+    return """
+             _______________________________
+
+            |   _____   _______   _____    |
+            |  |  |  | |       | |  |  |   |
+            |  |  |  | |   _   | |  |  |   |
+            |  |__|__| |  (_)  | |__|__|   |
+            |  |     | |   _   | |     |   |
+            |  |     | |  | |  | |     |   |
+            |  |     | |  | |  | |     |   |
+            |  |_____| |__| |__| |_____|   |
+            |   _________________________  |
+            |  |   __   _       _   __   | |
+            |  |  |  | | |  _  | | |  |  | |
+            |__|__|__| |_| |_| |_| |__|__| |
+                     PETRA (Jordan)
+    """
+
+def get_machu_picchu():
+    return """
+                       /\_
+                      /   \           _/\_
+          _/\_       /     \         /    \ 
+         /    \     /       \_______/      \ 
+        /      \___/   /\                   \ 
+       /              /  \                   \ 
+      /   ___        /____\       ___         \ 
+
+     |   |   |   _             _ |   |   _     |
+     |   |___|  |_|  _______  |_||___|  |_|    |
+     |              |       |                  |
+    /_______________|_______|___________________\ 
+                   MACHU PICCHU
+                     (Peru)
+    """
+
+def get_chichen_itza():
+    return """
+                        ______
+
+                       |______|
+                      /        \ 
+                     /__________\ 
+                    /            \ 
+                   /______________\ 
+                  /                \ 
+                 /__________________\ 
+                /                    \ 
+               /______________________\ 
+              /      ||   ||   ||      \ 
+             /_______||___||___||_______\ 
+                   CHICHEN ITZA
+                     (Mexico)
+    """
+
+def get_pyramid_giza():
+    return """
+                           /\ 
+                          /  \ 
+                         /    \ 
+                        /      \ 
+                       /        \ 
+                      /          \ 
+                     /____________\ 
+                    /  /\    /\  / \ 
+                   /  /__\  /__\/   \ 
+                  /__________________\ 
+                  GREAT PYRAMID OF GIZA
+                    (Egypt - Ancient)
+    """
+
+def get_ascii_art_location(location):
+	asciiarts={"Taj Mahal": get_taj_mahal(),"Coloseum":get_colosseum(),"GreatWallChina":get_great_wall(),"ChristRedeemer":get_christ_redeemer(),"Petra":get_petra(),
+"ManchuPichu":get_manchu_picchu(),"ChichenItza":get_chichen_itza(),"GreatPyramidGiza":get_pyramid_giza()}
+	return asciiarts[location]
+
+locations=["Taj Mahal","Coloseum","GreatWallChina","ChristRedeemer","Petra","ManchuPichu","ChichenItza","GreatPyramidGiza"]
+
 def get_tourist_destinations(continent:str) -> str:
 	"""
 	Gives a single tourist attraction in a continent
@@ -66,6 +234,36 @@ def get_language_time(destination,continent):
 	else:
 		return "Time is Evening. Language is English."
 
+def get_location_details(location):
+  app = Nominatim(user_agent="tutorial")
+
+  if app.geocode(location)==None:
+    print(f"{location} not found")
+    return
+
+  location = app.geocode(location).raw
+  # print raw data
+  # pprint(location)
+
+  response = requests.get(f"https://api.open-meteo.com/v1/forecast?latitude={location['lat']}&longitude={location['lon']}&current=temperature_2m,relative_humidity_2m,rain,weather_code")
+
+  weather=json.loads(response.text)
+
+  # print(f"{location['name']},({location['lat']},{location['lon']}) Temperature = {weather['current']['temperature_2m']}C")
+  # object creation
+  obj = TimezoneFinder()
+
+  # pass the longitude and latitude in timezone_at and it return time zone
+  latitude = location['lat']
+  longitude = location['lon']
+  IANA=obj.timezone_at(lng = longitude, lat = latitude)
+
+  response=requests.get(f"https://time.now/developer/api/timezone/{IANA}")
+  timedata=json.loads(response.text)
+  # print(f"Timezone={timedata['timezone']} current time={timedata['datetime']}")
+  output={"location":location,"latitude":lat,"longitude":lon,"temperature":weather['current']['temperature_2m'],
+"timezone":timedata['timezone'],"current_time":timedata['datetime']}
+  return output
 
 available_functions={
 	'get_tourist_destinations':get_tourist_destinations,
@@ -93,6 +291,7 @@ available_functions={
 # Stop after 3 iterations.
 # """
 
+# Steps: Pick a site, draw the site, Add details like time at the location and weather
 
 TouristInstructions="""
 You are a planning Agent. Create plan to get the time and language of any location using the tools provided to you.
